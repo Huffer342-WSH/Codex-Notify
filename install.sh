@@ -3,6 +3,7 @@
 set -eu
 
 PROGRAM_NAME="codex-notify"
+DEFAULT_SOURCE_URL="https://raw.githubusercontent.com/Huffer342-WSH/Codex-Notify/refs/heads/main/codex-notify.py"
 INSTALL_DIR="${CODEX_NOTIFY_INSTALL_DIR:-${HOME}/.local/bin}"
 INSTALL_PATH="${INSTALL_DIR}/${PROGRAM_NAME}"
 CODEX_DIR="${CODEX_HOME:-${HOME}/.codex}"
@@ -16,7 +17,7 @@ usage() {
 Usage: install.sh [options]
 
 Options:
-  --source-url URL  Download codex-notify.py from URL (for curl | sh)
+  --source-url URL  Download codex-notify.py from a custom URL
   --install-dir DIR Install the executable in DIR (default: ~/.local/bin)
   --no-config       Install the executable without changing Codex config.toml
   --uninstall       Remove the executable and its Codex notify configuration
@@ -149,9 +150,15 @@ if [ -n "$SOURCE_URL" ]; then
 elif [ -n "$script_dir" ] && [ -f "$local_source" ]; then
     cp "$local_source" "$temp_file"
 else
-    echo "error: codex-notify.py was not found next to install.sh" >&2
-    echo "When using curl | sh, pass --source-url URL." >&2
-    exit 1
+    SOURCE_URL=$DEFAULT_SOURCE_URL
+    if command -v curl >/dev/null 2>&1; then
+        curl --fail --silent --show-error --location "$SOURCE_URL" -o "$temp_file"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO "$temp_file" "$SOURCE_URL"
+    else
+        echo "error: curl or wget is required for remote installation" >&2
+        exit 1
+    fi
 fi
 
 python3 - "$temp_file" <<'PY'

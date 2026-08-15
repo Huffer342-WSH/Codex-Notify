@@ -10,6 +10,8 @@ Set-StrictMode -Version 2.0
 $ErrorActionPreference = "Stop"
 
 $programName = "codex-notify.ps1"
+$defaultSourceUrl = "https://raw.githubusercontent.com/Huffer342-WSH/" +
+    "Codex-Notify/refs/heads/main/codex-notify.ps1"
 $installPath = Join-Path $InstallDir $programName
 $launcherName = "codex-notify-activate.vbs"
 $launcherPath = Join-Path $InstallDir $launcherName
@@ -246,11 +248,18 @@ try {
         }
         Invoke-WebRequest -Uri $SourceUrl -OutFile $temporaryPath -UseBasicParsing
     } else {
-        $localSource = Join-Path $PSScriptRoot $programName
-        if (-not (Test-Path -LiteralPath $localSource)) {
-            throw "$programName was not found next to install.ps1."
+        $localSource = if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+            ""
+        } else {
+            Join-Path $PSScriptRoot $programName
         }
-        Copy-Item -LiteralPath $localSource -Destination $temporaryPath -Force
+        if (-not [string]::IsNullOrWhiteSpace($localSource) -and
+            (Test-Path -LiteralPath $localSource)) {
+            Copy-Item -LiteralPath $localSource -Destination $temporaryPath -Force
+        } else {
+            Invoke-WebRequest -Uri $defaultSourceUrl -OutFile $temporaryPath `
+                -UseBasicParsing
+        }
     }
 
     $tokens = $null
