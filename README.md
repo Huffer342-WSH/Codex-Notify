@@ -176,6 +176,10 @@ Linux：
 
 Windows 版本优先发送请求 `duration="long"` 的 WinRT Toast，通知横幅消失后仍可在通知
 中心（`Win+N`）查看；点击通过安装器注册的 `codex-notify://` 协议重新激活来源窗口。
+Toast 正文左侧使用脚本内嵌并缓存到 `%LOCALAPPDATA%\CodexNotify` 的 Codex SVG 图标；
+脚本读取 Windows 应用主题，深色主题使用浅色图标，浅色主题使用深色图标。
+Windows 11 顶部归属区域的应用图标由 PowerShell AppID 决定，不能通过 Toast XML 覆盖，
+因此顶部仍可能同时显示 PowerShell 图标。
 协议未安装或 WinRT 不可用时，脚本回退到 `System.Windows.Forms.NotifyIcon`。
 脚本会在 Codex 回调进程退出前记录父进程链和来源窗口；点击通知时使用 Win32 API 恢复
 并激活该窗口。支持识别 VS Code、VSCodium、Cursor、Windsurf、Codex、Windows
